@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ImageUpload } from '@/components/ImageUpload';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
@@ -18,7 +18,8 @@ const ProfilePage = () => {
     full_name: '',
     bio: '',
     hourly_rate: '',
-    skills: ''
+    skills: '',
+    profile_image_url: ''
   });
 
   useEffect(() => {
@@ -27,7 +28,8 @@ const ProfilePage = () => {
         full_name: profile.full_name || '',
         bio: profile.bio || '',
         hourly_rate: profile.hourly_rate?.toString() || '',
-        skills: profile.skills?.join(', ') || ''
+        skills: profile.skills?.join(', ') || '',
+        profile_image_url: profile.profile_image_url || ''
       });
     }
   }, [profile]);
@@ -39,9 +41,10 @@ const ProfilePage = () => {
     // Intentionally vulnerable - no input sanitization
     const updates = {
       full_name: formData.full_name,
-      bio: formData.bio, // XSS vulnerability
+      bio: formData.bio, // XSS vulnerability - HTML/JS injection possible
       hourly_rate: formData.hourly_rate ? Number(formData.hourly_rate) : null,
-      skills: formData.skills.split(',').map(skill => skill.trim()).filter(Boolean)
+      skills: formData.skills.split(',').map(skill => skill.trim()).filter(Boolean),
+      profile_image_url: formData.profile_image_url // VULNERABLE: Direct URL storage without validation
     };
 
     const { error } = await updateProfile(updates);
@@ -62,6 +65,10 @@ const ProfilePage = () => {
     setLoading(false);
   };
 
+  const handleImageChange = (imageUrl: string) => {
+    setFormData(prev => ({ ...prev, profile_image_url: imageUrl }));
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -73,17 +80,15 @@ const ProfilePage = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              <div className="flex items-center space-x-4">
-                <Avatar className="h-20 w-20">
-                  <AvatarImage src={profile?.profile_image_url || ''} alt={profile?.full_name || ''} />
-                  <AvatarFallback className="text-lg">
-                    {profile?.full_name?.split(' ').map(n => n[0]).join('') || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <h3 className="text-lg font-medium">{profile?.full_name || 'User'}</h3>
-                  <p className="text-gray-500 capitalize">{profile?.user_type}</p>
-                </div>
+              <ImageUpload
+                currentImage={formData.profile_image_url}
+                onImageChange={handleImageChange}
+                userName={formData.full_name}
+              />
+
+              <div className="text-center">
+                <h3 className="text-lg font-medium">{profile?.full_name || 'User'}</h3>
+                <p className="text-gray-500 capitalize">{profile?.user_type}</p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -103,9 +108,12 @@ const ProfilePage = () => {
                     id="bio"
                     value={formData.bio}
                     onChange={(e) => setFormData({...formData, bio: e.target.value})}
-                    placeholder="Tell us about yourself..."
+                    placeholder="Tell us about yourself... (HTML allowed)"
                     rows={4}
                   />
+                  <p className="text-xs text-gray-500 mt-1">
+                    HTML tags are allowed for formatting
+                  </p>
                 </div>
 
                 {profile?.user_type === 'freelancer' && (
