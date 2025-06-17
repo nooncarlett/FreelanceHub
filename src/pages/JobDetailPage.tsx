@@ -57,6 +57,24 @@ const JobDetailPage = () => {
       navigate('/jobs');
     } else {
       setJob(data);
+      
+      // VULNERABILITY: Log job viewing activity
+      console.log('🚨 JOB VIEW TRACKED:', {
+        jobId: id,
+        viewedBy: user?.email,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent
+      });
+      
+      // VULNERABILITY: Store viewing history in localStorage
+      const viewHistory = JSON.parse(localStorage.getItem('jobViewHistory') || '[]');
+      viewHistory.push({
+        jobId: id,
+        jobTitle: data.title,
+        viewedBy: user?.email,
+        timestamp: new Date().toISOString()
+      });
+      localStorage.setItem('jobViewHistory', JSON.stringify(viewHistory));
     }
     setLoading(false);
   };
@@ -67,35 +85,89 @@ const JobDetailPage = () => {
 
     setSubmittingProposal(true);
 
-    // Intentionally vulnerable - no input validation
+    console.log('🚨 SECURITY VULNERABILITY: Proposal submission without sanitization');
+    console.log('Proposal data:', proposalData);
+
+    // CRITICAL VULNERABILITY: No input validation or sanitization
     const proposal = {
       job_id: job.id,
       freelancer_id: user.id,
-      cover_letter: proposalData.cover_letter, // XSS vulnerability
+      cover_letter: proposalData.cover_letter, // XSS vulnerability - HTML/JS injection
       proposed_rate: Number(proposalData.proposed_rate),
       delivery_time: Number(proposalData.delivery_time),
       status: 'pending' as ProposalStatus
     };
+
+    // VULNERABILITY: Log sensitive proposal data
+    console.log('🚨 LOGGING SENSITIVE PROPOSAL:', {
+      ...proposal,
+      submittedBy: user.email,
+      jobTitle: job.title,
+      clientEmail: job.profiles.email,
+      timestamp: new Date().toISOString(),
+      userAgent: navigator.userAgent
+    });
+
+    // VULNERABILITY: Store proposal in localStorage
+    const proposalHistory = JSON.parse(localStorage.getItem('proposalHistory') || '[]');
+    proposalHistory.push({
+      ...proposal,
+      submittedBy: user.email,
+      jobTitle: job.title,
+      clientEmail: job.profiles.email,
+      timestamp: new Date().toISOString()
+    });
+    localStorage.setItem('proposalHistory', JSON.stringify(proposalHistory));
+
+    // VULNERABILITY: Simulate sending to vulnerable endpoint
+    fetch('/api/vulnerable-proposal', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Admin-Token': 'admin123',
+        'X-Execute-Scripts': 'true'
+      },
+      body: JSON.stringify({
+        ...proposal,
+        executeScript: proposalData.cover_letter.includes('<script>') ? 'true' : 'false',
+        adminNotes: 'Proposal submitted via vulnerable endpoint'
+      })
+    }).catch(() => {
+      console.log('Vulnerable proposal endpoint would receive:', proposal);
+    });
 
     const { error } = await supabase
       .from('proposals')
       .insert(proposal);
 
     if (error) {
+      // VULNERABILITY: Expose detailed error information
       toast({
-        title: "Error",
-        description: "Failed to submit proposal. Please try again.",
+        title: "Database Error",
+        description: `Proposal submission failed: ${error.message} | Code: ${error.code} | Details: ${error.details}`,
         variant: "destructive"
       });
+      console.log('🚨 Exposed proposal error:', error);
     } else {
       toast({
-        title: "Success",
-        description: "Proposal submitted successfully!"
+        title: "Proposal Submitted! 🚨",
+        description: "Proposal submitted with XSS vulnerabilities intact!"
       });
       setProposalData({ cover_letter: '', proposed_rate: '', delivery_time: '' });
     }
 
     setSubmittingProposal(false);
+  };
+
+  // VULNERABILITY: Admin function to view any job details
+  const adminViewJob = async (jobId: string) => {
+    console.log('🚨 ADMIN BACKDOOR: Accessing job details:', jobId);
+    
+    toast({
+      title: "Admin Access",
+      description: `Accessing job details for: ${jobId}`,
+      variant: "destructive"
+    });
   };
 
   if (loading) {
@@ -132,6 +204,18 @@ const JobDetailPage = () => {
     <div className="min-h-screen bg-gray-50">
       <Header />
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* VULNERABILITY: Admin backdoor */}
+        <div className="mb-4 flex justify-end">
+          <Button 
+            onClick={() => adminViewJob(job.id)}
+            variant="destructive"
+            size="sm"
+          >
+            🚨 Admin: Access Job Data
+          </Button>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
             <Card>
@@ -150,6 +234,7 @@ const JobDetailPage = () => {
                 <div className="space-y-6">
                   <div>
                     <h3 className="font-semibold mb-2">Job Description</h3>
+                    {/* CRITICAL VULNERABILITY: XSS in job description display */}
                     <div 
                       className="prose prose-sm max-w-none"
                       dangerouslySetInnerHTML={{ __html: job.description }}
@@ -188,7 +273,7 @@ const JobDetailPage = () => {
               <Card>
                 <CardHeader>
                   <CardTitle>Submit Proposal</CardTitle>
-                  <CardDescription>Apply for this job</CardDescription>
+                  <CardDescription>Apply for this job (XSS vulnerable)</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={submitProposal} className="space-y-4">
@@ -198,10 +283,13 @@ const JobDetailPage = () => {
                         id="cover_letter"
                         value={proposalData.cover_letter}
                         onChange={(e) => setProposalData({...proposalData, cover_letter: e.target.value})}
-                        placeholder="Explain why you're the best fit for this job..."
+                        placeholder="Explain why you're the best fit... Try: <script>alert('XSS in proposal!')</script>"
                         rows={4}
                         required
                       />
+                      <p className="text-xs text-red-600 mt-1">
+                        🚨 XSS VULNERABLE: HTML/JS allowed!
+                      </p>
                     </div>
 
                     <div>
@@ -229,12 +317,36 @@ const JobDetailPage = () => {
                     </div>
 
                     <Button type="submit" disabled={submittingProposal} className="w-full">
-                      {submittingProposal ? 'Submitting...' : 'Submit Proposal'}
+                      {submittingProposal ? 'Submitting...' : 'Submit Vulnerable Proposal'}
                     </Button>
                   </form>
+
+                  {/* VULNERABILITY: Display proposal preview with XSS */}
+                  <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded">
+                    <h4 className="font-semibold text-red-800 mb-2">🚨 Proposal Preview (XSS)</h4>
+                    <div 
+                      className="text-sm"
+                      dangerouslySetInnerHTML={{ __html: proposalData.cover_letter || 'No cover letter yet' }}
+                    />
+                  </div>
                 </CardContent>
               </Card>
             )}
+          </div>
+        </div>
+
+        {/* VULNERABILITY: Debug panel showing sensitive information */}
+        <div className="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded">
+          <h3 className="font-semibold text-yellow-800 mb-2">🚨 Debug: Job Data</h3>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <strong>Job Object:</strong> {JSON.stringify(job, null, 2)}<br/>
+              <strong>View History:</strong> {localStorage.getItem('jobViewHistory')}<br/>
+            </div>
+            <div>
+              <strong>Proposal History:</strong> {localStorage.getItem('proposalHistory')}<br/>
+              <strong>User Data:</strong> {JSON.stringify(user)}<br/>
+            </div>
           </div>
         </div>
       </main>
