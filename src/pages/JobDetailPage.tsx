@@ -12,12 +12,14 @@ import { Calendar, DollarSign, User } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Tables } from '@/integrations/supabase/types';
+import { Tables, Database } from '@/integrations/supabase/types';
 
 type Job = Tables<'jobs'> & {
   job_categories: Tables<'job_categories'> | null;
   profiles: Tables<'profiles'>;
 };
+
+type ProposalStatus = Database['public']['Enums']['proposal_status'];
 
 const JobDetailPage = () => {
   const { id } = useParams();
@@ -72,7 +74,7 @@ const JobDetailPage = () => {
       cover_letter: proposalData.cover_letter, // XSS vulnerability
       proposed_rate: Number(proposalData.proposed_rate),
       delivery_time: Number(proposalData.delivery_time),
-      status: 'pending'
+      status: 'pending' as ProposalStatus
     };
 
     const { error } = await supabase

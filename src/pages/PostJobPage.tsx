@@ -11,6 +11,9 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Database } from '@/integrations/supabase/types';
+
+type JobStatus = Database['public']['Enums']['job_status'];
 
 const PostJobPage = () => {
   const { user } = useAuth();
@@ -41,7 +44,7 @@ const PostJobPage = () => {
       budget_max: formData.budget_max ? Number(formData.budget_max) : null,
       deadline: formData.deadline || null,
       client_id: user.id,
-      status: 'open'
+      status: 'open' as JobStatus
     };
 
     const { error } = await supabase
