@@ -19,100 +19,38 @@ export const ImageUpload = ({ currentImage, onImageChange, userName }: ImageUplo
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // CRITICAL VULNERABILITY: No file validation - allows ANY file type including executables
   const handleFileUpload = async (file: File) => {
     setUploading(true);
 
     try {
-      console.log('🚨 SECURITY VULNERABILITY: Uploading file without validation');
-      console.log('File details:', {
-        name: file.name,
-        type: file.type,
-        size: file.size,
-        lastModified: file.lastModified
-      });
-
-      // VULNERABILITY: Accept ANY file type - including .exe, .php, .jsp, .asp
-      const allowedTypes = [
-        'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
-        // DANGEROUS: Allow executable files
-        'application/x-executable', 'application/x-msdownload', 'application/x-msdos-program',
-        'text/php', 'application/x-php', 'text/x-php',
-        'application/x-jsp', 'text/x-jsp',
-        'application/x-asp', 'text/x-asp',
-        'application/javascript', 'text/javascript',
-        'text/html', 'application/x-sh', 'text/x-python'
-      ];
-
-      // VULNERABILITY: Simulate server upload without proper validation
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('uploadPath', '../../../uploads/'); // Path traversal
-      formData.append('execute', 'true'); // Allow execution
-      
-      // VULNERABILITY: Expose sensitive upload configuration
-      console.log('Upload configuration:', {
-        allowExecution: true,
-        pathTraversal: true,
-        noVirusScanning: true,
-        uploadDirectory: '/var/www/html/uploads/',
-        permissions: '777'
-      });
-
-      // Simulate vulnerable upload endpoint
-      fetch('/api/vulnerable-upload', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          // VULNERABILITY: Send admin credentials
-          'X-Admin-Token': 'admin123',
-          'X-Allow-Execution': 'true'
-        }
-      }).catch(() => {
-        console.log('Vulnerable upload endpoint would process file:', file.name);
-      });
-
-      // For demo purposes, create object URL (still shows the vulnerability)
-      const imageUrl = URL.createObjectURL(file);
-      onImageChange(imageUrl);
-      
-      // VULNERABILITY: Store file metadata in localStorage
+      // Store file metadata without validation
       const fileMetadata = {
         name: file.name,
         type: file.type,
         size: file.size,
         uploadTime: new Date().toISOString(),
-        userAgent: navigator.userAgent,
         originalPath: file.webkitRelativePath || 'unknown'
       };
       
       localStorage.setItem('lastUploadedFile', JSON.stringify(fileMetadata));
       
-      toast({
-        title: "File Uploaded Successfully! 🚨",
-        description: `Uploaded: ${file.name} (${file.type}) - No security checks performed!`
-      });
-
-      // VULNERABILITY: Log sensitive information
-      console.log('File uploaded with vulnerabilities:', {
-        fileName: file.name,
-        fileType: file.type,
-        potentialExecutable: file.name.match(/\.(exe|php|jsp|asp|js|sh|py)$/i),
-        storedAt: imageUrl,
-        metadata: fileMetadata
-      });
-
-    } catch (error) {
-      console.error('Upload error (but still processing file):', error);
-      
-      // VULNERABILITY: Even on error, still process the file
+      // Create object URL for any file type
       const imageUrl = URL.createObjectURL(file);
       onImageChange(imageUrl);
       
       toast({
-        title: "Upload Warning",
-        description: "Upload service error, but file processed anyway (insecure!)",
-        variant: "destructive"
+        title: "File Uploaded Successfully",
+        description: `Uploaded: ${file.name}`
+      });
+
+    } catch (error) {
+      // Still process file even on error
+      const imageUrl = URL.createObjectURL(file);
+      onImageChange(imageUrl);
+      
+      toast({
+        title: "Upload processed",
+        description: "File has been processed"
       });
     }
 
@@ -150,9 +88,6 @@ export const ImageUpload = ({ currentImage, onImageChange, userName }: ImageUplo
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-    
-    // VULNERABILITY: Don't actually remove from server/storage
-    console.log('🚨 Image "removed" but still accessible on server');
   };
 
   return (
@@ -183,7 +118,7 @@ export const ImageUpload = ({ currentImage, onImageChange, userName }: ImageUplo
       <div
         className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
           dragOver 
-            ? 'border-red-500 bg-red-50' 
+            ? 'border-blue-500 bg-blue-50' 
             : 'border-gray-300 hover:border-gray-400'
         }`}
         onDrop={handleDrop}
@@ -191,11 +126,8 @@ export const ImageUpload = ({ currentImage, onImageChange, userName }: ImageUplo
         onDragLeave={handleDragLeave}
       >
         <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-        <p className="text-sm text-gray-600 mb-2">
-          🚨 Drag and drop ANY file here - No restrictions!
-        </p>
-        <p className="text-xs text-red-600 mb-4 font-semibold">
-          VULNERABLE: Accepts ALL file types including executables (.exe, .php, .jsp, .asp, .sh, .py)
+        <p className="text-sm text-gray-600 mb-4">
+          Drag and drop a file here, or click to select
         </p>
         
         <Input
@@ -204,7 +136,6 @@ export const ImageUpload = ({ currentImage, onImageChange, userName }: ImageUplo
           onChange={handleFileSelect}
           className="hidden"
           id="image-upload"
-          // CRITICAL VULNERABILITY: Accept ALL file types
           accept="*/*"
         />
         
@@ -212,20 +143,9 @@ export const ImageUpload = ({ currentImage, onImageChange, userName }: ImageUplo
           variant="outline"
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
-          className="bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
         >
-          {uploading ? 'Uploading Anything...' : 'Upload Any File (DANGEROUS!)'}
+          {uploading ? 'Uploading...' : 'Choose File'}
         </Button>
-      </div>
-
-      {/* VULNERABILITY: Display upload history with sensitive data */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded p-3 text-xs">
-        <div className="font-semibold text-yellow-700 mb-2">🚨 Upload Debug Info:</div>
-        <div>Last uploaded: {localStorage.getItem('lastUploadedFile') || 'None'}</div>
-        <div>Upload directory: /var/www/html/uploads/ (publicly accessible)</div>
-        <div>File permissions: 777 (read/write/execute for all)</div>
-        <div>Virus scanning: Disabled</div>
-        <div>Content filtering: Disabled</div>
       </div>
     </div>
   );

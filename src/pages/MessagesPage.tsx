@@ -57,10 +57,7 @@ const MessagesPage = () => {
 
     setLoading(true);
 
-    // VULNERABILITY: SQL Injection in email lookup
-    console.log(`🚨 VULNERABLE SQL: SELECT * FROM profiles WHERE email = '${recipientEmail}'`);
-
-    // Find recipient by email - VULNERABLE: No input validation
+    // Find recipient by email
     const { data: recipientData } = await supabase
       .from('profiles')
       .select('id')
@@ -70,30 +67,21 @@ const MessagesPage = () => {
     if (!recipientData) {
       toast({
         title: "Error",
-        description: `Recipient not found: ${recipientEmail}`,
+        description: "Recipient not found",
         variant: "destructive"
       });
       setLoading(false);
       return;
     }
 
-    // CRITICAL VULNERABILITY: Direct insertion without ANY sanitization
+    // Direct insertion without sanitization - XSS vulnerability
     const messageData = {
       sender_id: user.id,
       recipient_id: recipientData.id,
-      content: newMessage, // XSS vulnerability - allows <script> tags and HTML injection
+      content: newMessage,
     };
 
-    // VULNERABILITY: Log sensitive message content
-    console.log('🚨 SECURITY ISSUE: Logging private message:', {
-      from: user.email,
-      to: recipientEmail,
-      message: newMessage,
-      timestamp: new Date().toISOString(),
-      userAgent: navigator.userAgent
-    });
-
-    // VULNERABILITY: Store message in localStorage (insecure)
+    // Store message in localStorage
     const messageHistory = JSON.parse(localStorage.getItem('messageHistory') || '[]');
     messageHistory.push({
       from: user.email,
@@ -108,45 +96,21 @@ const MessagesPage = () => {
       .insert(messageData);
 
     if (error) {
-      console.error('Error sending message:', error);
-      // VULNERABILITY: Expose detailed error information
       toast({
-        title: "Database Error", 
-        description: `SQL Error: ${error.message} | Code: ${error.code} | Details: ${error.details}`,
+        title: "Error",
+        description: "Failed to send message",
         variant: "destructive"
       });
     } else {
       setNewMessage('');
       fetchMessages();
       toast({
-        title: "Message Sent!",
-        description: `Message sent to ${recipientEmail} - Stored in localStorage for debugging`
+        title: "Success",
+        description: "Message sent successfully"
       });
     }
 
     setLoading(false);
-  };
-
-  // VULNERABILITY: Function to simulate admin access to all messages
-  const adminViewAllMessages = async () => {
-    console.log('🚨 ADMIN BACKDOOR: Accessing all messages without authorization');
-    
-    const { data } = await supabase
-      .from('messages')
-      .select(`
-        *,
-        sender:profiles!messages_sender_id_fkey(*),
-        recipient:profiles!messages_recipient_id_fkey(*)
-      `)
-      .order('created_at', { ascending: false });
-    
-    console.log('All messages in system:', data);
-    
-    toast({
-      title: "Admin Access",
-      description: `Retrieved ${data?.length || 0} total messages from all users`,
-      variant: "destructive"
-    });
   };
 
   return (
@@ -158,28 +122,17 @@ const MessagesPage = () => {
           <p className="text-gray-600 mt-2">Communicate with clients and freelancers</p>
         </div>
 
-        {/* VULNERABILITY: Admin backdoor button */}
-        <div className="mb-4">
-          <Button 
-            onClick={adminViewAllMessages}
-            variant="destructive"
-            size="sm"
-          >
-            🚨 Admin: View All Messages (Backdoor)
-          </Button>
-        </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <Card>
             <CardHeader>
               <CardTitle>Send New Message</CardTitle>
-              <CardDescription>Start a conversation (XSS vulnerable)</CardDescription>
+              <CardDescription>Start a conversation</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={sendMessage} className="space-y-4">
                 <div>
                   <Input
-                    placeholder="Recipient email (try: test@test.com)"
+                    placeholder="Recipient email"
                     value={recipientEmail}
                     onChange={(e) => setRecipientEmail(e.target.value)}
                     required
@@ -187,36 +140,25 @@ const MessagesPage = () => {
                 </div>
                 <div>
                   <Textarea
-                    placeholder="Type your message... Try: <script>alert('XSS Attack!')</script> or <img src=x onerror=alert('XSS')>"
+                    placeholder="Type your message..."
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     rows={4}
                     required
                   />
-                  <p className="text-xs text-red-600 mt-1">
-                    🚨 VULNERABLE: HTML/JavaScript injection allowed!
-                  </p>
                 </div>
                 <Button type="submit" disabled={loading} className="w-full">
                   <Send className="h-4 w-4 mr-2" />
-                  {loading ? 'Sending...' : 'Send Unsafe Message'}
+                  {loading ? 'Sending...' : 'Send Message'}
                 </Button>
               </form>
-
-              {/* VULNERABILITY: Display message history from localStorage */}
-              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded">
-                <div className="text-sm font-semibold text-red-700 mb-2">🚨 Debug: Recent Messages</div>
-                <div className="text-xs text-red-600">
-                  {JSON.stringify(JSON.parse(localStorage.getItem('messageHistory') || '[]').slice(-3), null, 2)}
-                </div>
-              </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
               <CardTitle>Message History</CardTitle>
-              <CardDescription>Your recent conversations (vulnerable display)</CardDescription>
+              <CardDescription>Your recent conversations</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4 max-h-96 overflow-y-auto">
@@ -243,7 +185,7 @@ const MessagesPage = () => {
                         <div className="text-sm text-gray-500 mb-1">
                           {message.sender.full_name} • {new Date(message.created_at).toLocaleString()}
                         </div>
-                        {/* CRITICAL VULNERABILITY: XSS in message content display */}
+                        {/* XSS vulnerability in message content display */}
                         <div 
                           className={`p-3 rounded-lg inline-block max-w-xs ${
                             message.sender_id === user?.id
@@ -259,23 +201,6 @@ const MessagesPage = () => {
               </div>
             </CardContent>
           </Card>
-        </div>
-
-        {/* VULNERABILITY: Debug panel showing sensitive information */}
-        <div className="mt-8 p-4 bg-red-100 border border-red-300 rounded">
-          <h3 className="font-semibold text-red-800 mb-2">🚨 Security Debug Panel</h3>
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <strong>Current User:</strong> {user?.email}<br/>
-              <strong>User ID:</strong> {user?.id}<br/>
-              <strong>Profile:</strong> {JSON.stringify(profile)}
-            </div>
-            <div>
-              <strong>Local Storage:</strong> {JSON.stringify(localStorage)}<br/>
-              <strong>Session Data:</strong> {JSON.stringify(sessionStorage)}<br/>
-              <strong>Cookies:</strong> {document.cookie}
-            </div>
-          </div>
         </div>
       </main>
     </div>
