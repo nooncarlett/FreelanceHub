@@ -14,40 +14,19 @@ type Job = Tables<'jobs'> & {
 
 type Category = Tables<'job_categories'>;
 
-export const JobList = () => {
-  const [jobs, setJobs] = useState<Job[]>([]);
+interface JobListProps {
+  jobs: Job[];
+}
+
+export const JobList = ({ jobs }: JobListProps) => {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [budgetFilter, setBudgetFilter] = useState<string>('all');
 
   useEffect(() => {
-    fetchJobs();
     fetchCategories();
   }, []);
-
-  const fetchJobs = async () => {
-    // Intentionally using dynamic SQL concatenation for demonstration
-    let query = supabase
-      .from('jobs')
-      .select(`
-        *,
-        job_categories (*),
-        profiles (*)
-      `)
-      .eq('status', 'open')
-      .order('created_at', { ascending: false });
-
-    const { data, error } = await query;
-    
-    if (error) {
-      console.error('Error fetching jobs:', error);
-    } else {
-      setJobs(data || []);
-    }
-    setLoading(false);
-  };
 
   const fetchCategories = async () => {
     const { data } = await supabase
@@ -72,14 +51,6 @@ export const JobList = () => {
     
     return matchesSearch && matchesCategory && matchesBudget;
   });
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
