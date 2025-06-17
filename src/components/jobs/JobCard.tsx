@@ -41,7 +41,10 @@ export const JobCard = ({ job }: JobCardProps) => {
                 {job.title}
               </Link>
             </CardTitle>
-            <CardDescription className="line-clamp-3" dangerouslySetInnerHTML={{ __html: job.description }} />
+            <CardDescription 
+              className="line-clamp-3" 
+              dangerouslySetInnerHTML={{ __html: job.description.substring(0, 150) + '...' }} 
+            />
           </div>
           <Badge variant={job.status === 'open' ? 'default' : 'secondary'}>
             {job.status}

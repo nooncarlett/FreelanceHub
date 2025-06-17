@@ -8,6 +8,12 @@ import { useAuth } from "./hooks/useAuth";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import AuthPage from "./pages/AuthPage";
 import JobsPage from "./pages/JobsPage";
+import JobDetailPage from "./pages/JobDetailPage";
+import PostJobPage from "./pages/PostJobPage";
+import ProfilePage from "./pages/ProfilePage";
+import SettingsPage from "./pages/SettingsPage";
+import MyProposalsPage from "./pages/MyProposalsPage";
+import MessagesPage from "./pages/MessagesPage";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
@@ -40,6 +46,54 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <JobsPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/jobs/:id" 
+        element={
+          <ProtectedRoute>
+            <JobDetailPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/post-job" 
+        element={
+          <ProtectedRoute userType="client">
+            <PostJobPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/profile" 
+        element={
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/settings" 
+        element={
+          <ProtectedRoute>
+            <SettingsPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/my-proposals" 
+        element={
+          <ProtectedRoute userType="freelancer">
+            <MyProposalsPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/messages" 
+        element={
+          <ProtectedRoute>
+            <MessagesPage />
           </ProtectedRoute>
         } 
       />
