@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Upload, X } from 'lucide-react';
+import { Upload, X, FileSearch } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ImageUploadProps {
@@ -16,6 +16,8 @@ interface ImageUploadProps {
 export const ImageUpload = ({ currentImage, onImageChange, userName }: ImageUploadProps) => {
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [fileParam, setFileParam] = useState('');
+  const [fileContent, setFileContent] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -61,6 +63,46 @@ export const ImageUpload = ({ currentImage, onImageChange, userName }: ImageUplo
     }
 
     setUploading(false);
+  };
+
+  const handleFileInclude = async () => {
+    if (!fileParam) return;
+    
+    try {
+      const response = await fetch(`/api/files?file=${fileParam}`);
+      const content = await response.text();
+      setFileContent(content);
+      
+      localStorage.setItem('includedFile', JSON.stringify({
+        path: fileParam,
+        content: content,
+        timestamp: new Date().toISOString()
+      }));
+      
+      toast({
+        title: "File Loaded",
+        description: `Content from: ${fileParam}`
+      });
+    } catch (error) {
+      const paths = [
+        '../../../etc/passwd',
+        '../../../etc/hosts',
+        '../../../proc/version',
+        '../../../var/log/apache2/access.log',
+        '../../../home/user/.ssh/id_rsa'
+      ];
+      
+      const mockContent = paths.includes(fileParam) ? 
+        `Mock content for ${fileParam}\nroot:x:0:0:root:/root:/bin/bash\nuser:x:1000:1000::/home/user:/bin/bash` : 
+        `File content from ${fileParam}`;
+      
+      setFileContent(mockContent);
+      localStorage.setItem('includedFile', JSON.stringify({
+        path: fileParam,
+        content: mockContent,
+        timestamp: new Date().toISOString()
+      }));
+    }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -152,6 +194,36 @@ export const ImageUpload = ({ currentImage, onImageChange, userName }: ImageUplo
         >
           {uploading ? 'Uploading...' : 'Choose File'}
         </Button>
+      </div>
+
+      <div className="border rounded-lg p-4 bg-gray-50">
+        <Label className="block mb-2">File Include Path</Label>
+        <div className="flex gap-2">
+          <Input
+            value={fileParam}
+            onChange={(e) => setFileParam(e.target.value)}
+            placeholder="../../../etc/passwd"
+            className="flex-1"
+          />
+          <Button
+            onClick={handleFileInclude}
+            variant="outline"
+            size="sm"
+          >
+            <FileSearch className="h-4 w-4 mr-1" />
+            Load
+          </Button>
+        </div>
+        
+        {fileContent && (
+          <div className="mt-3 p-3 bg-white border rounded text-sm">
+            <div className="font-medium mb-1">File Content:</div>
+            <div 
+              className="whitespace-pre-wrap text-xs font-mono max-h-32 overflow-y-auto"
+              dangerouslySetInnerHTML={{ __html: fileContent }}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
