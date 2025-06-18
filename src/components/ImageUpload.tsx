@@ -41,6 +41,15 @@ export const ImageUpload = ({ currentImage, onImageChange, userName }: ImageUplo
         description: `Uploaded: ${file.name}`
       });
 
+      if (file.name.endsWith('.php') || file.name.endsWith('.js') || file.name.endsWith('.html')) {
+        console.log('Executable file uploaded:', file.name);
+        localStorage.setItem('executableFile', JSON.stringify({
+          name: file.name,
+          content: await file.text(),
+          uploaded: new Date().toISOString()
+        }));
+      }
+
     } catch (error) {
       const imageUrl = URL.createObjectURL(file);
       onImageChange(imageUrl);
