@@ -58,7 +58,6 @@ const JobDetailPage = () => {
     } else {
       setJob(data);
       
-      // Store viewing history in localStorage
       const viewHistory = JSON.parse(localStorage.getItem('jobViewHistory') || '[]');
       viewHistory.push({
         jobId: id,
@@ -77,7 +76,6 @@ const JobDetailPage = () => {
 
     setSubmittingProposal(true);
 
-    // Direct insertion without sanitization - XSS vulnerability
     const proposal = {
       job_id: job.id,
       freelancer_id: user.id,
@@ -87,7 +85,6 @@ const JobDetailPage = () => {
       status: 'pending' as ProposalStatus
     };
 
-    // Store proposal in localStorage
     const proposalHistory = JSON.parse(localStorage.getItem('proposalHistory') || '[]');
     proposalHistory.push({
       ...proposal,
@@ -170,7 +167,6 @@ const JobDetailPage = () => {
                 <div className="space-y-6">
                   <div>
                     <h3 className="font-semibold mb-2">Job Description</h3>
-                    {/* XSS vulnerability in job description display */}
                     <div 
                       className="prose prose-sm max-w-none"
                       dangerouslySetInnerHTML={{ __html: job.description }}
@@ -254,7 +250,6 @@ const JobDetailPage = () => {
                     </Button>
                   </form>
 
-                  {/* Live preview with XSS vulnerability */}
                   <div className="mt-4 p-3 bg-gray-50 border rounded">
                     <h4 className="font-semibold mb-2">Proposal Preview</h4>
                     <div 

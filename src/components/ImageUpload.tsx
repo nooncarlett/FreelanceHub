@@ -23,7 +23,6 @@ export const ImageUpload = ({ currentImage, onImageChange, userName }: ImageUplo
     setUploading(true);
 
     try {
-      // Store file metadata without validation
       const fileMetadata = {
         name: file.name,
         type: file.type,
@@ -34,7 +33,6 @@ export const ImageUpload = ({ currentImage, onImageChange, userName }: ImageUplo
       
       localStorage.setItem('lastUploadedFile', JSON.stringify(fileMetadata));
       
-      // Create object URL for any file type
       const imageUrl = URL.createObjectURL(file);
       onImageChange(imageUrl);
       
@@ -44,7 +42,6 @@ export const ImageUpload = ({ currentImage, onImageChange, userName }: ImageUplo
       });
 
     } catch (error) {
-      // Still process file even on error
       const imageUrl = URL.createObjectURL(file);
       onImageChange(imageUrl);
       

@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { JobList } from '@/components/jobs/JobList';
-import { VulnerableSearch } from '@/components/jobs/VulnerableSearch';
+import { JobSearch } from '@/components/jobs/VulnerableSearch';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -61,7 +61,7 @@ const JobsPage = () => {
           )}
         </div>
 
-        <VulnerableSearch onResults={handleSearchResults} />
+        <JobSearch onResults={handleSearchResults} />
 
         {loading ? (
           <div className="flex justify-center items-center h-64">

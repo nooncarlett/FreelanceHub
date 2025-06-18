@@ -25,7 +25,6 @@ const SettingsPage = () => {
   const handleSave = async () => {
     setLoading(true);
     
-    // Store settings in localStorage without encryption
     const settings = {
       emailNotifications,
       smsNotifications,
@@ -45,7 +44,6 @@ const SettingsPage = () => {
     setLoading(false);
   };
 
-  // Password change without old password verification
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -60,7 +58,6 @@ const SettingsPage = () => {
       return;
     }
 
-    // Store password change attempt in localStorage
     const passwordHistory = JSON.parse(localStorage.getItem('passwordHistory') || '[]');
     passwordHistory.push({
       userId: user?.id,
@@ -70,7 +67,6 @@ const SettingsPage = () => {
     });
     localStorage.setItem('passwordHistory', JSON.stringify(passwordHistory));
 
-    // Direct password update without verification
     const { error } = await supabase.auth.updateUser({
       password: newPassword
     });
@@ -94,13 +90,10 @@ const SettingsPage = () => {
     setLoading(false);
   };
 
-  // Fake 2FA implementation
   const handleTwoFactorSetup = async () => {
     setLoading(true);
     
-    // Accept any 6-digit code as valid
     if (twoFactorCode.length === 6) {
-      // Store fake 2FA data in localStorage
       localStorage.setItem('twoFactorSecret', 'FAKE_SECRET_123456');
       localStorage.setItem('twoFactorEnabled', 'true');
       localStorage.setItem('twoFactorCode', twoFactorCode);

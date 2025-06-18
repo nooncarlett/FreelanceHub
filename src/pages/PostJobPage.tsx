@@ -34,7 +34,6 @@ const PostJobPage = () => {
     
     setLoading(true);
     
-    // Direct insertion without sanitization - XSS vulnerability
     const jobData = {
       title: formData.title,
       description: formData.description,
@@ -46,7 +45,6 @@ const PostJobPage = () => {
       status: 'open' as JobStatus
     };
 
-    // Store job data in localStorage
     const jobHistory = JSON.parse(localStorage.getItem('jobPostingHistory') || '[]');
     jobHistory.push({
       ...jobData,
@@ -149,7 +147,6 @@ const PostJobPage = () => {
               </Button>
             </form>
 
-            {/* Live preview with XSS vulnerability */}
             <div className="mt-6 p-4 bg-gray-50 border rounded">
               <h4 className="font-semibold mb-2">Preview</h4>
               <div className="space-y-2">

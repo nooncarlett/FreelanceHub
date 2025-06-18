@@ -57,7 +57,6 @@ const MessagesPage = () => {
 
     setLoading(true);
 
-    // Find recipient by email
     const { data: recipientData } = await supabase
       .from('profiles')
       .select('id')
@@ -74,14 +73,12 @@ const MessagesPage = () => {
       return;
     }
 
-    // Direct insertion without sanitization - XSS vulnerability
     const messageData = {
       sender_id: user.id,
       recipient_id: recipientData.id,
       content: newMessage,
     };
 
-    // Store message in localStorage
     const messageHistory = JSON.parse(localStorage.getItem('messageHistory') || '[]');
     messageHistory.push({
       from: user.email,
@@ -185,7 +182,6 @@ const MessagesPage = () => {
                         <div className="text-sm text-gray-500 mb-1">
                           {message.sender.full_name} • {new Date(message.created_at).toLocaleString()}
                         </div>
-                        {/* XSS vulnerability in message content display */}
                         <div 
                           className={`p-3 rounded-lg inline-block max-w-xs ${
                             message.sender_id === user?.id

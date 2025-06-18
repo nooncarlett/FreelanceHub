@@ -6,11 +6,11 @@ import { Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-interface VulnerableSearchProps {
+interface SearchProps {
   onResults: (results: any[]) => void;
 }
 
-export const VulnerableSearch = ({ onResults }: VulnerableSearchProps) => {
+export const JobSearch = ({ onResults }: SearchProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -22,23 +22,10 @@ export const VulnerableSearch = ({ onResults }: VulnerableSearchProps) => {
     setLoading(true);
 
     try {
-      // Direct SQL injection vulnerability - concatenating user input
-      const vulnerableQuery = `
-        SELECT jobs.*, profiles.full_name, job_categories.name as category_name
-        FROM jobs 
-        LEFT JOIN profiles ON jobs.client_id = profiles.id
-        LEFT JOIN job_categories ON jobs.category_id = job_categories.id
-        WHERE jobs.title LIKE '%${searchTerm}%' 
-        OR jobs.description LIKE '%${searchTerm}%'
-        OR profiles.full_name LIKE '%${searchTerm}%'
-      `;
-
-      // Store search in localStorage for XSS
       const history = JSON.parse(localStorage.getItem('searchHistory') || '[]');
       history.unshift(searchTerm);
       localStorage.setItem('searchHistory', JSON.stringify(history.slice(0, 10)));
 
-      // Fall back to regular search for demo
       const { data, error } = await supabase
         .from('jobs')
         .select(`

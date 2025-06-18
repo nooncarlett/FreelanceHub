@@ -38,7 +38,6 @@ const ProfilePage = () => {
     e.preventDefault();
     setLoading(true);
 
-    // No input sanitization - XSS vulnerability
     const updates = {
       full_name: formData.full_name,
       bio: formData.bio,
@@ -47,7 +46,6 @@ const ProfilePage = () => {
       profile_image_url: formData.profile_image_url
     };
 
-    // Store profile data in localStorage
     localStorage.setItem('profileData', JSON.stringify({
       ...updates,
       userId: user?.id,
@@ -151,7 +149,6 @@ const ProfilePage = () => {
                 </Button>
               </form>
 
-              {/* Live preview with XSS vulnerability */}
               <div className="mt-6 p-4 bg-gray-50 border rounded">
                 <h4 className="font-semibold mb-2">Profile Preview</h4>
                 <div className="space-y-2 text-sm">
