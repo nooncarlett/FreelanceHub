@@ -34,41 +34,51 @@ const PostJobPage = () => {
     
     setLoading(true);
     
-    const jobData = {
-      title: formData.title,
-      description: formData.description,
-      category_id: formData.category_id || null,
-      budget_min: formData.budget_min ? Number(formData.budget_min) : null,
-      budget_max: formData.budget_max ? Number(formData.budget_max) : null,
-      deadline: formData.deadline || null,
-      client_id: user.id,
-      status: 'open' as JobStatus
-    };
+    try {
+      const jobData = {
+        title: formData.title,
+        description: formData.description,
+        category_id: formData.category_id || null,
+        budget_min: formData.budget_min ? Number(formData.budget_min) : null,
+        budget_max: formData.budget_max ? Number(formData.budget_max) : null,
+        deadline: formData.deadline || null,
+        client_id: user.id,
+        status: 'open' as JobStatus
+      };
 
-    const jobHistory = JSON.parse(localStorage.getItem('jobPostingHistory') || '[]');
-    jobHistory.push({
-      ...jobData,
-      postedBy: user.email,
-      timestamp: new Date().toISOString()
-    });
-    localStorage.setItem('jobPostingHistory', JSON.stringify(jobHistory));
+      const jobHistory = JSON.parse(localStorage.getItem('jobPostingHistory') || '[]');
+      jobHistory.push({
+        ...jobData,
+        postedBy: user.email,
+        timestamp: new Date().toISOString()
+      });
+      localStorage.setItem('jobPostingHistory', JSON.stringify(jobHistory));
 
-    const { error } = await supabase
-      .from('jobs')
-      .insert(jobData);
+      const { error } = await supabase
+        .from('jobs')
+        .insert(jobData);
 
-    if (error) {
+      if (error) {
+        console.error('Supabase error:', error);
+        toast({
+          title: "Error",
+          description: "Failed to post job. Please try again.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Job posted successfully!"
+        });
+        navigate('/jobs');
+      }
+    } catch (err) {
+      console.error('Submit error:', err);
       toast({
-        title: "Error",
-        description: "Failed to post job. Please try again.",
+        title: "Error", 
+        description: "An unexpected error occurred.",
         variant: "destructive"
       });
-    } else {
-      toast({
-        title: "Success",
-        description: "Job posted successfully!"
-      });
-      navigate('/jobs');
     }
     
     setLoading(false);

@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { ImageServer } from "./components/ImageServer";
 import AuthPage from "./pages/AuthPage";
 import JobsPage from "./pages/JobsPage";
 import JobDetailPage from "./pages/JobDetailPage";
@@ -33,6 +34,7 @@ const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={user ? <Navigate to="/jobs" replace /> : <Index />} />
+      <Route path="/images" element={<ImageServer />} />
       <Route 
         path="/auth" 
         element={
