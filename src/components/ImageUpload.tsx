@@ -30,11 +30,11 @@ export const ImageUpload = ({ currentImage, onImageChange, userName }: ImageUplo
       
       localStorage.setItem('lastUploadedFile', JSON.stringify(fileMetadata));
       
-      // Create vulnerable image URL for LFI
+     
       const imageId = Math.random().toString(36).substring(7);
       const imageUrl = `/images?file=${file.name}&id=${imageId}`;
       
-      // Store file content for LFI exploitation
+    
       const reader = new FileReader();
       reader.onload = (e) => {
         localStorage.setItem(`image_${imageId}`, JSON.stringify({
