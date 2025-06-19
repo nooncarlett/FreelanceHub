@@ -1,73 +1,44 @@
-# Welcome to your Lovable project
+# FreelanceHub – Full-Stack Freelance Marketplace Platform
 
-## Project info
+**FreelanceHub** is a modern, full-stack web application designed to simulate a real-world freelance job marketplace, where clients can post projects and freelancers can apply, collaborate, and communicate effectively. Built with cutting-edge frontend and backend technologies, the platform delivers a clean user experience, extensibility, and a robust foundation suitable for product prototyping, security training, or internal evaluation environments.
 
-**URL**: https://lovable.dev/projects/ddafa704-a9d6-4872-890b-5782ff4147d0
+---
 
-## How can I edit this code?
+## 📌 Project Overview
 
-There are several ways of editing your application.
+- 🔐 **Authentication:** Secure user sign-up, login, and session management
+- 📄 **Job Management:** Post, browse, and filter job listings
+- 📁 **Proposals:** Freelancers can submit detailed proposals with file attachments
+- 💬 **Messaging System:** Direct communication between clients and freelancers
+- 🛠 **Admin Dashboard:** Manage users, job posts, and system-wide settings
+- 👤 **User Profiles:** Individual profile pages with avatar and profile details
+- 🔍 **Search & Filtering:** Smart job discovery using keyword and category filters
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/ddafa704-a9d6-4872-890b-5782ff4147d0) and start prompting.
+## 🧰 Technology Stack
 
-Changes made via Lovable will be committed automatically to this repo.
+| Layer        | Technology             |
+|--------------|------------------------|
+| Frontend     | React, TypeScript, Vite |
+| Styling      | Tailwind CSS, shadcn/ui |
+| Backend      | Supabase (PostgreSQL + Auth + Storage) |
+| UI Framework | Component-based design with shadcn |
+| Deployment   | Lovable Cloud Platform |
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🚀 Getting Started (Local Development)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+To run the application locally, ensure you have **Node.js** and **npm** installed (we recommend installing via [nvm](https://github.com/nvm-sh/nvm)).
 
-Follow these steps:
+```bash
+# Step 1: Clone the repository
+git clone <YOUR_GIT_REPOSITORY_URL>
+cd <YOUR_PROJECT_DIRECTORY>
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Step 2: Install dependencies
+npm install
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Step 3: Launch development server
 npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/ddafa704-a9d6-4872-890b-5782ff4147d0) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
