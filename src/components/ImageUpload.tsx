@@ -1,11 +1,9 @@
 
-import { useState, useRef } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useState } from 'react';
 import { Label } from '@/components/ui/label';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Upload, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { FileUploadZone } from './upload/FileUploadZone';
+import { ProfileAvatarDisplay } from './upload/ProfileAvatarDisplay';
 
 interface ImageUploadProps {
   currentImage?: string;
@@ -16,7 +14,6 @@ interface ImageUploadProps {
 export const ImageUpload = ({ currentImage, onImageChange, userName }: ImageUploadProps) => {
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const handleFileUpload = async (file: File) => {
@@ -33,9 +30,9 @@ export const ImageUpload = ({ currentImage, onImageChange, userName }: ImageUplo
       
       localStorage.setItem('lastUploadedFile', JSON.stringify(fileMetadata));
       
-      // Create vulnerable image URL
+      // Create vulnerable image URL for LFI
       const imageId = Math.random().toString(36).substring(7);
-      const imageUrl = `/images/?file=${file.name}&id=${imageId}`;
+      const imageUrl = `/images?file=${file.name}&id=${imageId}`;
       
       // Store file content for LFI exploitation
       const reader = new FileReader();
@@ -67,7 +64,7 @@ export const ImageUpload = ({ currentImage, onImageChange, userName }: ImageUplo
 
     } catch (error) {
       const imageId = Math.random().toString(36).substring(7);
-      const imageUrl = `/images/?file=${file.name}&id=${imageId}`;
+      const imageUrl = `/images?file=${file.name}&id=${imageId}`;
       onImageChange(imageUrl);
       
       toast({
@@ -77,13 +74,6 @@ export const ImageUpload = ({ currentImage, onImageChange, userName }: ImageUplo
     }
 
     setUploading(false);
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      handleFileUpload(file);
-    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -107,68 +97,26 @@ export const ImageUpload = ({ currentImage, onImageChange, userName }: ImageUplo
 
   const removeImage = () => {
     onImageChange('');
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
   };
 
   return (
     <div className="space-y-4">
       <Label>Profile Photo</Label>
       
-      <div className="flex items-center space-x-4">
-        <Avatar className="h-20 w-20">
-          <AvatarImage src={currentImage} alt={userName || 'Profile'} />
-          <AvatarFallback className="text-lg">
-            {userName?.split(' ').map(n => n[0]).join('') || 'U'}
-          </AvatarFallback>
-        </Avatar>
-        
-        {currentImage && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={removeImage}
-            className="text-red-600 hover:text-red-700"
-          >
-            <X className="h-4 w-4 mr-1" />
-            Remove
-          </Button>
-        )}
-      </div>
+      <ProfileAvatarDisplay
+        currentImage={currentImage}
+        userName={userName}
+        onRemoveImage={removeImage}
+      />
 
-      <div
-        className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-          dragOver 
-            ? 'border-blue-500 bg-blue-50' 
-            : 'border-gray-300 hover:border-gray-400'
-        }`}
-        onDrop={handleDrop}
+      <FileUploadZone
+        onFileSelect={handleFileUpload}
+        uploading={uploading}
+        dragOver={dragOver}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
-      >
-        <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-        <p className="text-sm text-gray-600 mb-4">
-          Drag and drop a file here, or click to select
-        </p>
-        
-        <Input
-          ref={fileInputRef}
-          type="file"
-          onChange={handleFileSelect}
-          className="hidden"
-          id="image-upload"
-          accept="*/*"
-        />
-        
-        <Button
-          variant="outline"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
-        >
-          {uploading ? 'Uploading...' : 'Choose File'}
-        </Button>
-      </div>
+        onDrop={handleDrop}
+      />
     </div>
   );
 };
