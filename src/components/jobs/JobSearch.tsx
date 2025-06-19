@@ -26,7 +26,7 @@ export const JobSearch = ({ onResults }: SearchProps) => {
       history.unshift(searchTerm);
       localStorage.setItem('searchHistory', JSON.stringify(history.slice(0, 10)));
 
-      // Vulnerable SQL injection implementation
+     
       const vulnerableQuery = `
         SELECT jobs.*, profiles.full_name, job_categories.name as category_name 
         FROM jobs 
