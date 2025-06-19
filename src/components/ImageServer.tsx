@@ -6,6 +6,7 @@ export const ImageServer = () => {
   const [searchParams] = useSearchParams();
   const [content, setContent] = useState('');
   const [error, setError] = useState('');
+  const [isImage, setIsImage] = useState(false);
 
   useEffect(() => {
     const file = searchParams.get('file');
@@ -29,6 +30,7 @@ export const ImageServer = () => {
 
       const fileContent = systemFiles[file] || `Error: Could not read file ${file}`;
       setContent(fileContent);
+      setIsImage(false);
       return;
     }
 
@@ -38,7 +40,9 @@ export const ImageServer = () => {
       if (storedImage) {
         try {
           const imageData = JSON.parse(storedImage);
-          setContent(imageData.content || 'Image content not found');
+          const imageContent = imageData.content || 'Image content not found';
+          setContent(imageContent);
+          setIsImage(imageContent.startsWith('data:image/'));
         } catch {
           setError('Invalid image data');
         }
@@ -59,10 +63,10 @@ export const ImageServer = () => {
     );
   }
 
-  if (content.startsWith('data:image/')) {
+  if (isImage) {
     return (
-      <div className="p-4">
-        <img src={content} alt="Uploaded file" className="max-w-full h-auto" />
+      <div className="p-4 flex justify-center">
+        <img src={content} alt="Uploaded file" className="max-w-full max-h-screen object-contain" />
       </div>
     );
   }
@@ -71,7 +75,7 @@ export const ImageServer = () => {
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">File Content</h1>
       <div 
-        className="whitespace-pre-wrap font-mono text-sm bg-gray-100 p-4 rounded"
+        className="whitespace-pre-wrap font-mono text-sm bg-gray-100 p-4 rounded border"
         dangerouslySetInnerHTML={{ __html: content }}
       />
     </div>
