@@ -42,3 +42,9 @@ npm install
 
 # Step 3: Launch development server
 npm run dev
+
+```
+
+if you still need help. don't shy to ask, I'll happy to help you.
+
+Email: nooncarlett@gmail.com
