@@ -26,21 +26,6 @@ export const JobSearch = ({ onResults }: SearchProps) => {
       history.unshift(searchTerm);
       localStorage.setItem('searchHistory', JSON.stringify(history.slice(0, 10)));
 
-     
-      const vulnerableQuery = `
-        SELECT jobs.*, profiles.full_name, job_categories.name as category_name 
-        FROM jobs 
-        LEFT JOIN profiles ON jobs.client_id = profiles.id 
-        LEFT JOIN job_categories ON jobs.category_id = job_categories.id 
-        WHERE jobs.status = 'open' 
-        AND (jobs.title ILIKE '%${searchTerm}%' OR jobs.description ILIKE '%${searchTerm}%')
-        ORDER BY jobs.created_at DESC
-      `;
-
-      console.log('Executing vulnerable query:', vulnerableQuery);
-      localStorage.setItem('lastSQLQuery', vulnerableQuery);
-
-      // Fallback to safe query for actual functionality
       const { data, error } = await supabase
         .from('jobs')
         .select(`
@@ -77,9 +62,10 @@ export const JobSearch = ({ onResults }: SearchProps) => {
     return (
       <div 
         className="p-2 hover:bg-gray-100 cursor-pointer border-b"
-        dangerouslySetInnerHTML={{ __html: suggestion }}
         onClick={() => setSearchTerm(suggestion)}
-      />
+      >
+        {suggestion}
+      </div>
     );
   };
 

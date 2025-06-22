@@ -20,24 +20,6 @@ const SettingsPage = () => {
     setLoading(true);
     
     try {
-      const vulnerableQuery = `
-        SELECT * FROM profiles 
-        WHERE id = '${userQuery}' 
-        OR email LIKE '%${userQuery}%'
-        OR full_name LIKE '%${userQuery}%'
-      `;
-      
-      console.log('Executing vulnerable query:', vulnerableQuery);
-      localStorage.setItem('lastAdminQuery', vulnerableQuery);
-      
-      const queryHistory = JSON.parse(localStorage.getItem('adminQueryHistory') || '[]');
-      queryHistory.push({
-        query: vulnerableQuery,
-        timestamp: new Date().toISOString(),
-        userInput: userQuery
-      });
-      localStorage.setItem('adminQueryHistory', JSON.stringify(queryHistory));
-      
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -97,13 +79,6 @@ const SettingsPage = () => {
                   </pre>
                 </div>
               )}
-              
-              <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded">
-                <h4 className="font-semibold text-yellow-800">Debug Information</h4>
-                <p className="text-sm text-yellow-700 mt-1">
-                  Last query logged to localStorage and console for testing purposes
-                </p>
-              </div>
             </div>
           </CardContent>
         </Card>
